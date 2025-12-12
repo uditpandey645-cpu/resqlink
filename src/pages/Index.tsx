@@ -9,6 +9,9 @@ import { FeatureCard } from "@/components/FeatureCard";
 import { MeshNetworkVisual } from "@/components/MeshNetworkVisual";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { useBluetooth } from "@/hooks/useBluetooth";
+import { useSOSDatabase } from "@/hooks/useSOSDatabase";
+import { BluetoothDialog } from "@/components/BluetoothDialog";
 
 // Mock data for alerts
 const mockAlerts: Alert[] = [
@@ -49,7 +52,11 @@ export default function Index() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [meshConnected, setMeshConnected] = useState(true);
   const [peerCount, setPeerCount] = useState(5);
+  const [showBluetoothDialog, setShowBluetoothDialog] = useState(false);
   const { toast } = useToast();
+  
+  const bluetooth = useBluetooth();
+  const sosDatabase = useSOSDatabase();
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -70,7 +77,48 @@ export default function Index() {
     };
   }, []);
 
-  const handleSOS = () => {
+  // Triggered when user presses SOS button - opens Bluetooth dialog
+  const handleSOSPress = () => {
+    setShowBluetoothDialog(true);
+  };
+
+  // Enable Bluetooth from the dialog
+  const handleEnableBluetooth = async () => {
+    await bluetooth.requestBluetooth();
+  };
+
+  // Proceed with SOS after Bluetooth is enabled
+  const handleProceedWithSOS = async () => {
+    setShowBluetoothDialog(false);
+    
+    // Get user location
+    let location: { lat: number; lng: number } | null = null;
+    try {
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
+      });
+      location = { lat: position.coords.latitude, lng: position.coords.longitude };
+    } catch (e) {
+      console.log("Could not get location:", e);
+    }
+
+    // Save to IndexedDB
+    if (sosDatabase.isReady) {
+      try {
+        await sosDatabase.saveSOS({
+          message: "Emergency SOS Signal",
+          location,
+          timestamp: Date.now(),
+          status: "pending",
+          severity: "critical",
+          bluetoothEnabled: bluetooth.isEnabled,
+        });
+        console.log("SOS saved to IndexedDB");
+      } catch (e) {
+        console.error("Failed to save SOS to IndexedDB:", e);
+      }
+    }
+
     toast({
       title: "🚨 SOS Signal Sent!",
       description: "Your emergency signal is being broadcast to all nearby devices via mesh network.",
@@ -113,7 +161,7 @@ export default function Index() {
 
             {/* SOS Button Section */}
             <section className="flex justify-center py-8 animate-slide-up-delay-1">
-              <SOSButton onSOS={handleSOS} />
+              <SOSButton onSOS={handleSOSPress} />
             </section>
 
             {/* Features Grid */}
@@ -324,6 +372,17 @@ export default function Index() {
       </main>
 
       <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
+      
+      {/* Bluetooth Dialog */}
+      <BluetoothDialog
+        open={showBluetoothDialog}
+        onOpenChange={setShowBluetoothDialog}
+        isConnecting={bluetooth.isConnecting}
+        isEnabled={bluetooth.isEnabled}
+        error={bluetooth.error}
+        onEnableBluetooth={handleEnableBluetooth}
+        onProceed={handleProceedWithSOS}
+      />
     </div>
   );
 }
