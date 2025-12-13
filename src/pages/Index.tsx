@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useBluetooth } from "@/hooks/useBluetooth";
 import { useSOSDatabase } from "@/hooks/useSOSDatabase";
+import { useLocation } from "@/hooks/useLocation";
 import { BluetoothDialog } from "@/components/BluetoothDialog";
 
 // Mock data for alerts
@@ -47,16 +48,20 @@ const mockAlerts: Alert[] = [
   },
 ];
 
+type DialogStep = "bluetooth" | "location" | "complete";
+
 export default function Index() {
   const [activeTab, setActiveTab] = useState("home");
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [meshConnected, setMeshConnected] = useState(true);
   const [peerCount, setPeerCount] = useState(5);
   const [showBluetoothDialog, setShowBluetoothDialog] = useState(false);
+  const [dialogStep, setDialogStep] = useState<DialogStep>("bluetooth");
   const { toast } = useToast();
   
   const bluetooth = useBluetooth();
   const sosDatabase = useSOSDatabase();
+  const location = useLocation();
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -79,6 +84,7 @@ export default function Index() {
 
   // Triggered when user presses SOS button - opens Bluetooth dialog
   const handleSOSPress = () => {
+    setDialogStep("bluetooth");
     setShowBluetoothDialog(true);
   };
 
@@ -87,33 +93,39 @@ export default function Index() {
     await bluetooth.requestBluetooth();
   };
 
-  // Proceed with SOS after Bluetooth is enabled
+  // Request location permission and start watching
+  const handleRequestLocation = async () => {
+    if (dialogStep === "bluetooth" && bluetooth.isEnabled) {
+      // Move to location step
+      setDialogStep("location");
+      return;
+    }
+    
+    const granted = await location.requestPermission();
+    if (granted) {
+      // Start live location tracking
+      location.startWatching();
+      setDialogStep("complete");
+    }
+  };
+
+  // Proceed with SOS after all permissions granted
   const handleProceedWithSOS = async () => {
     setShowBluetoothDialog(false);
     
-    // Get user location
-    let location: { lat: number; lng: number } | null = null;
-    try {
-      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
-      });
-      location = { lat: position.coords.latitude, lng: position.coords.longitude };
-    } catch (e) {
-      console.log("Could not get location:", e);
-    }
-
-    // Save to IndexedDB
+    // Save to IndexedDB with live coordinates
     if (sosDatabase.isReady) {
       try {
         await sosDatabase.saveSOS({
           message: "Emergency SOS Signal",
-          location,
+          location: location.coordinates,
           timestamp: Date.now(),
           status: "pending",
           severity: "critical",
           bluetoothEnabled: bluetooth.isEnabled,
+          accuracy: location.accuracy,
         });
-        console.log("SOS saved to IndexedDB");
+        console.log("SOS saved to IndexedDB with location:", location.coordinates);
       } catch (e) {
         console.error("Failed to save SOS to IndexedDB:", e);
       }
@@ -121,7 +133,9 @@ export default function Index() {
 
     toast({
       title: "🚨 SOS Signal Sent!",
-      description: "Your emergency signal is being broadcast to all nearby devices via mesh network.",
+      description: location.coordinates 
+        ? `Broadcasting from ${location.coordinates.lat.toFixed(4)}, ${location.coordinates.lng.toFixed(4)}`
+        : "Your emergency signal is being broadcast to all nearby devices.",
       variant: "destructive",
     });
   };
@@ -373,7 +387,7 @@ export default function Index() {
 
       <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
       
-      {/* Bluetooth Dialog */}
+      {/* Bluetooth & Location Dialog */}
       <BluetoothDialog
         open={showBluetoothDialog}
         onOpenChange={setShowBluetoothDialog}
@@ -382,6 +396,13 @@ export default function Index() {
         error={bluetooth.error}
         onEnableBluetooth={handleEnableBluetooth}
         onProceed={handleProceedWithSOS}
+        step={dialogStep}
+        isRequestingLocation={location.isRequesting}
+        isLocationGranted={location.isPermissionGranted}
+        locationError={location.error}
+        coordinates={location.coordinates}
+        accuracy={location.accuracy}
+        onRequestLocation={handleRequestLocation}
       />
     </div>
   );

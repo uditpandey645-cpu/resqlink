@@ -8,6 +8,7 @@ export interface SOSRecord {
   status: "pending" | "sent" | "synced";
   severity: "low" | "medium" | "high" | "critical";
   bluetoothEnabled: boolean;
+  accuracy?: number | null;
 }
 
 const DB_NAME = "ResQLinkDB";
