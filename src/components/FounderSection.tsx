@@ -1,6 +1,7 @@
 import { Heart, Linkedin, Github, Mail, Award, Sparkles } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import uditPhoto from "@/assets/udit-photo.jpg";
 
 export function FounderSection() {
   return (
@@ -13,8 +14,12 @@ export function FounderSection() {
           {/* Founder Avatar with glow effect */}
           <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-r from-primary to-safe rounded-full blur-xl opacity-30 animate-pulse" />
-            <div className="relative h-24 w-24 rounded-full bg-gradient-to-br from-primary via-primary/80 to-safe flex items-center justify-center ring-4 ring-background shadow-2xl">
-              <span className="text-3xl font-bold text-primary-foreground font-display">UP</span>
+            <div className="relative h-24 w-24 rounded-full ring-4 ring-background shadow-2xl overflow-hidden">
+              <img 
+                src={uditPhoto} 
+                alt="Udit Pandey - Founder" 
+                className="h-full w-full object-cover"
+              />
             </div>
             <div className="absolute -bottom-1 -right-1 bg-safe rounded-full p-1.5 ring-2 ring-background">
               <Award className="h-4 w-4 text-safe-foreground" />
@@ -51,25 +56,27 @@ export function FounderSection() {
           {/* Social Links */}
           <div className="flex items-center gap-3 pt-2">
             <a 
-              href="#" 
-              className="p-2.5 rounded-xl glass-subtle hover:bg-primary/10 transition-colors group"
+              href="https://www.linkedin.com/in/udit-pandey-b30191384" 
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-2.5 rounded-xl glass-subtle hover:bg-[#0077B5]/20 transition-colors group"
               aria-label="LinkedIn"
             >
-              <Linkedin className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+              <Linkedin className="h-4 w-4 text-[#0077B5] group-hover:scale-110 transition-transform" />
             </a>
             <a 
               href="#" 
-              className="p-2.5 rounded-xl glass-subtle hover:bg-primary/10 transition-colors group"
+              className="p-2.5 rounded-xl glass-subtle hover:bg-foreground/10 transition-colors group"
               aria-label="GitHub"
             >
-              <Github className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+              <Github className="h-4 w-4 text-foreground group-hover:scale-110 transition-transform" />
             </a>
             <a 
               href="#" 
-              className="p-2.5 rounded-xl glass-subtle hover:bg-primary/10 transition-colors group"
+              className="p-2.5 rounded-xl glass-subtle hover:bg-danger/20 transition-colors group"
               aria-label="Email"
             >
-              <Mail className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+              <Mail className="h-4 w-4 text-danger group-hover:scale-110 transition-transform" />
             </a>
           </div>
         </div>
