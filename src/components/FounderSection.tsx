@@ -66,9 +66,9 @@ export function FounderSection() {
               </h3>
               <Sparkles className="h-5 w-5 text-warning animate-[twinkle_1s_ease-in-out_infinite]" />
             </div>
-            <Badge className="bg-gradient-to-r from-primary/20 to-safe/20 border-primary/40 text-primary hover:from-primary/30 hover:to-safe/30 transition-all px-4 py-1">
+            <Badge className="bg-gradient-to-r from-primary/30 to-safe/30 border-primary/50 hover:from-primary/40 hover:to-safe/40 transition-all px-4 py-1">
               <Heart className="h-3 w-3 mr-1.5 fill-danger text-danger animate-pulse" />
-              Founder & Creator
+              <span className="text-foreground font-semibold">Founder & Creator</span>
             </Badge>
           </div>
 
