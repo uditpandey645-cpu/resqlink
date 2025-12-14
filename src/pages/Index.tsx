@@ -9,6 +9,7 @@ import { FeatureCard } from "@/components/FeatureCard";
 import { MeshNetworkVisual } from "@/components/MeshNetworkVisual";
 import { BluetoothDevicesDashboard } from "@/components/BluetoothDevicesDashboard";
 import { FounderSection } from "@/components/FounderSection";
+import { WaveBackground } from "@/components/WaveBackground";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useBluetooth } from "@/hooks/useBluetooth";
@@ -386,7 +387,8 @@ export default function Index() {
   };
 
   return (
-    <div className="min-h-screen gradient-hero">
+    <div className="min-h-screen gradient-hero relative">
+      <WaveBackground />
       <Header
         isOnline={isOnline}
         meshConnected={meshConnected}
