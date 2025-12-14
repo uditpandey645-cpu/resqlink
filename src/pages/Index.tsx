@@ -7,6 +7,8 @@ import { AlertCard, Alert } from "@/components/AlertCard";
 import { MessageInput } from "@/components/MessageInput";
 import { FeatureCard } from "@/components/FeatureCard";
 import { MeshNetworkVisual } from "@/components/MeshNetworkVisual";
+import { BluetoothDevicesDashboard } from "@/components/BluetoothDevicesDashboard";
+import { FounderSection } from "@/components/FounderSection";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useBluetooth } from "@/hooks/useBluetooth";
@@ -215,6 +217,16 @@ export default function Index() {
                 </div>
                 <MeshNetworkVisual />
               </div>
+            </section>
+
+            {/* Bluetooth Devices Dashboard */}
+            <section className="animate-slide-up-delay-3">
+              <BluetoothDevicesDashboard isBluetoothEnabled={bluetooth.isEnabled} />
+            </section>
+
+            {/* Founder Section */}
+            <section className="animate-slide-up-delay-3">
+              <FounderSection />
             </section>
           </div>
         );
